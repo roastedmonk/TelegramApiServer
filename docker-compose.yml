@@ -25,10 +25,10 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:9507:3306"
-    volumes:
-      - ./.mysql:/var/lib/mysql
+    #volumes:
+    #  - ./.mysql:/var/lib/mysql
     environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      MYSQL_ROOT_PASSWORD: telegramapiserver
 networks:
   default:
     name: telegram-api-server
