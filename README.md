@@ -1,4 +1,86 @@
 # TelegramApiServer
+
+### Docker: 
+1. `git clone https://github.com/roastedmonk/TelegramApiServer.git TelegramApiServer`
+1. `cd TelegramApiServer`
+1. Get app_id and app_hash at [my.telegram.org](https://my.telegram.org/). 
+    Only one app_id needed for any amount of users and bots.
+1. Update the .env.docker file with app_id & hash_id from above step and update here.
+1. Start container: `docker-compose up`  
+1. Start new shell and connect to docker container: `docker exec -it telegram-api-server /bin/bash`
+1. Start another instance with different port inside new shell: `php server.php -p=9500 -s=session --docker -e=.env.docker`
+   wait untill you something like this
+   ```
+   [2020-12-31 12:30:52] [warning] Connected to DC 3.0!
+   [2020-12-31 12:30:52] [warning] OK!
+   [2020-12-31 12:30:52] [warning] Connected to DC 1.0!
+   [2020-12-31 12:30:52] [warning] OK!
+   ```
+1. exit with `Ctrl + C`.
+1. restart the both TAS & MySQL docker images.
+1. Number of sessions should be 1 :) 
+
+# How to download files
+1. Create a channel with public
+1. call to get last few messages : http://127.0.0.1:9503/api/getHistory/?data[peer]=@channel_name[limit]=10
+1. From the body use the `media` tag to use for downloading the file.
+1. To Download
+```
+curl --location --request POST '127.0.0.1:9503/api/downloadToResponse' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "media": {
+        "_": "messageMediaDocument",
+        "document": {
+            "_": "document",
+            "id": 5109720023660757147,
+            "access_hash": -2293330860080517191,
+            "file_reference": {
+                "_": "bytes",
+                "bytes": "BEhlsX0AAADsX+29PeMqxvpTKl+7DH/teKHipkg="
+            },
+            "date": 1608284384,
+            "mime_type": "video/x-matroska",
+            "size": 210429782,
+            "thumbs": [
+                {
+                    "_": "photoStrippedSize",
+                    "type": "i",
+                    "bytes": {
+                        "_": "bytes",
+                        "bytes": "ASgoy4YjKSSQqLyzHtTzOsfECAf7bDLH/Ci4PlokA7AM/ux/wFRJG7/dUn6UASfbLn/nvJ9NxxSidZOJ4w3+2oww/wAaj8iUjIQ4pHjePG9SufWgBZojEQQQyNyrDvRUlv8AvEeA9wWT2Yf4iigBLz/j9m/3zj86kt1dRw23cRnpTLj94iTjuAr+zD/EVEjEd8YOaaJkrouLG+wZkIJGCBimXaSFIyW3ADpxx0qFZcLgkmmyOGAxnj3puwoprcfZf8fsP++M/nRS2/7tHnPYFU92P+AoqSyOGUxEggMjcMp71IYFk5gkB/2GOGH+NFFACfY7n/nhJ9dpxSiBY+Z5AP8AYU5Y/wCFFFAEc0plIAAVF4VR2ooooA8="
+                    },
+                    "inflated": {
+                        "_": "bytes",
+                        "bytes": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDACgcHiMeGSgjISMtKygwPGRBPDc3PHtYXUlkkYCZlo+AjIqgtObDoKrarYqMyP/L2u71////m8H////6/+b9//j/2wBDASstLTw1PHZBQXb4pYyl+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj/wAARCAAoKAADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDLhiMpJJCovLMe1PM6x8QIB/tsMsf8KLg+WiQDsAz+7H/AVEkbv91SfpQBJ9suf+e8n03HFKJ1k4njDf7ajDD/ABqPyJSMhDikeN48b1K59aAFmiMRBBDI3KsO9FSW/wC8R4D3BZPZh/iKKAEvP+P2b/fOPzqS3V1HDbdxGelMuP3iJOO4Cv7MP8RUSMR3xg5pomSui4sb7BmQgkYIGKZdpIUjJbcAOnHHSoVlwuCSabI4YDGePem7Cimtx9l/x+w/74z+dFLb/u0ec9gVT3Y/4CipLI4ZTESCAyNwynvUhgWTmCQH/YY4Yf40UUAJ9juf+eEn12nFKIFj5nkA/wBhTlj/AIUUUARzSmUgABUXhVHaiiigD//Z"
+                    }
+                },
+                {
+                    "_": "photoSize",
+                    "type": "m",
+                    "location": {
+                        "_": "fileLocationToBeDeprecated",
+                        "volume_id": 100033700762,
+                        "local_id": 37924
+                    },
+                    "w": 320,
+                    "h": 320,
+                    "size": 16819
+                }
+            ],
+            "dc_id": 1,
+            "attributes": [
+                {
+                    "_": "documentAttributeFilename",
+                    "file_name": "@M© Paava Kadhaigal (2020) Thangam E04.mkv"
+                }
+            ]
+        }
+    }
+}'
+```
+
+------------------------------------------------------------
 Fast, simple, async php telegram api server: 
 [MadelineProto](https://github.com/danog/MadelineProto) and [Amp](https://github.com/amphp/amp) Http Server
 
